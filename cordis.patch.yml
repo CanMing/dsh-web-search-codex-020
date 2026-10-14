@@ -1,0 +1,17 @@
+# DSH 0.2.0-rc.2 desktop bundle. Selecting this bundle selects its search provider.
+- insert:
+    - id: web-search-codex
+      name: dsh-web-search-codex-020
+      config:
+        apiKeyEnv: CODEX_SEARCH_API_KEY
+        searchContextSize: medium
+        stream: true
+        maxOutputTokens: 4096
+        reasoningEffort: low
+        timeoutMs: 90000
+
+# DSH patch config is whole-object replacement. Restate fetchProvider here if
+# another bundle pins a fetch provider you need to preserve.
+- id: web
+  config:
+    searchProvider: codex-local

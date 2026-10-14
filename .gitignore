@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+*.zip
+coverage/
+.env
+.env.*
+!.env.example
+*.log
+.release/
+*.local.*
