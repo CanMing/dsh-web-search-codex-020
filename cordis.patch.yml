@@ -1,4 +1,4 @@
-# DSH 0.2.0-rc.2 desktop bundle. Selecting this bundle selects its search provider.
+# DSH 0.2.1-rc.3 desktop bundle. Selecting this bundle selects its search provider.
 - insert:
     - id: web-search-codex
       name: dsh-web-search-codex-020

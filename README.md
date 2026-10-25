@@ -1,6 +1,6 @@
 # dsh-web-search-codex-020
 
-为 **DeepSeek Harness 桌面版 0.2.0-rc.2** 制作的 OpenAI Responses 原生联网搜索插件。基于 `@lyd123qw2008/dsh-web-search-codex@0.1.3`，保留来源声明，增加当前 DSH 配置接口、桌面设置卡与可安装组合包。
+为 **DeepSeek Harness 桌面版 0.2.1-rc.3** 制作的 OpenAI Responses 原生联网搜索插件。基于 `@lyd123qw2008/dsh-web-search-codex@0.1.3`，保留来源声明，增加当前 DSH 配置接口、桌面设置卡与可安装组合包。
 
 ## 能力
 
@@ -14,17 +14,23 @@
 
 ## 安装
 
-只声明并验证 **DSH 0.2.0-rc.2**，不承诺兼容其他 DSH 版本。建议使用该桌面版附带的 Node.js 24 运行开发测试。
+只声明并验证 **DSH 0.2.1-rc.3**，不承诺兼容其他 DSH 版本。建议使用该桌面版附带的 Node.js 24 运行开发测试。
 
 在 DSH 的「插件」页选择安装，输入本仓库的 GitHub 地址，或下载 Release 中的 `.tgz` 并使用其绝对路径安装。DSH 插件管理器支持 npm 组合包、本地路径和压缩包；本项目已包含 `dsh.bundle` 和预构建客户端，无需在桌面安装时手动编译。
 
 CLI 方式（将路径替换为你的安装位置）：
 
 ```text
-dsh plugin --profile desktop add /absolute/path/dsh-web-search-codex-020-0.2.0-rc.2.tgz
+dsh plugin --profile desktop add /absolute/path/dsh-web-search-codex-020-0.2.1-rc.3.tgz
 ```
 
 安装后组合包会选中 `codex-local` 作为搜索提供方。端点和模型没有默认值，填写并保存后才可搜索。
+
+## 从 0.2.0-rc.2 升级
+
+先将 DSH 更新至 **0.2.1-rc.3**，再在插件管理器中更新本插件，或安装本次 Release 的 `.tgz`。新版有插件版本准入校验，请使用 `0.2.1-rc.3` 插件包；无需为旧版本启用兼容性豁免。
+
+包名仍为 `dsh-web-search-codex-020`，配置命名空间 `web-search-codex`、提供方 ID `codex-local` 和默认凭据引用均保持原值，可沿用原有配置。若 DSH 提示需要重启，按提示重启后确认插件版本。
 
 ## 配置
 
@@ -64,12 +70,13 @@ npm pack
 
 构建脚本无额外构建依赖，把 `client.js` 的限定静态 ESM 源格式转换成 DSH 所需 `window.__ModuleLoader__.load` classic 模块。产物 `lib/client.js` 提交到仓库，支持直接通过 GitHub 安装。
 
-测试使用真实 DSH 0.2.0-rc.2 包，覆盖 Loader 动态配置、凭据引用、提供方释放、组合包配置、请求格式、SSE 分块、结构化来源、失败、取消和超时。联网验证是单独执行的集成检查，测试本身不使用真实密钥或消耗额度。
+测试使用真实 DSH 0.2.1-rc.3 包，覆盖新版兼容性准入、Loader 动态配置、凭据引用、提供方释放、组合包配置、请求格式、SSE 分块、结构化来源、失败、取消和超时。新增真实 `SettingsFormModel` 发布代码的保存测试及 Windows CRLF 构建回归。测试本身不使用真实密钥或消耗上游额度。
 
 ## 验证范围
 
-- 33 项自动化测试全部通过，包含 DSH 0.2.0-rc.2 的真实服务、Loader 和动态配置接口。
-- 新插件的传输代码已对 sub2api Responses 网关完成一次真实搜索验证，约 7.45 秒返回回答和 25 条结构化来源。
+- **43 项自动化测试全部通过**，包含 DSH 0.2.1-rc.3 的兼容性准入、真实服务、Loader 和动态配置接口。
+- 新版真实表单保存测试覆盖 revision 冲突、同时更换凭据引用和密钥、保存失败重试及空密钥保留行为。
+- 旧版 0.2.0-rc.2 曾对 sub2api 网关完成一次真实搜索验证；本次 rc.3 使用隔离响应测试，未重新发起付费上游请求。
 - 自动化配置卡测试与 classic 模块检查不等同于完整 Electron 人工点击验收；详细环境、证据与限制见 `VALIDATION.md`。
 
 ## 来源与许可证

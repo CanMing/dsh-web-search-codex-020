@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import { Context, resolveConfig } from '@deepseek-ai/cordis';
 import Loader from '@deepseek-ai/cordis-plugin-loader';
-import { composeEntries } from '@deepseek-ai/dsh-app-boot';
+import { composeEntries, evaluatePluginCompatibility, getDshRuntimeVersion } from '@deepseek-ai/dsh-app-boot';
 import { load as loadYaml } from 'js-yaml';
 import * as plugin from '../lib/index.js';
 
@@ -116,16 +116,34 @@ async function loadProvider(runtime, config = initialConfig, id = 'web-search-co
   return entry;
 }
 
-test('uses the actual DSH 0.2.0-rc.2 runtime package versions', async () => {
+test('uses the actual DSH 0.2.1-rc.3 runtime package versions', async () => {
   const expected = {
-    '@deepseek-ai/cordis': '4.0.4',
-    '@deepseek-ai/schemastery': '3.18.4',
-    '@deepseek-ai/dsh-web': '0.2.0-rc.2',
-    '@deepseek-ai/cordis-plugin-loader': '1.0.5',
+    '@deepseek-ai/cordis': '4.0.5',
+    '@deepseek-ai/schemastery': '3.18.5',
+    '@deepseek-ai/dsh-web': '0.2.1-rc.3',
+    '@deepseek-ai/cordis-plugin-loader': '1.0.6',
   };
   for (const [name, version] of Object.entries(expected)) {
     const actual = JSON.parse(await readFile(require.resolve(`${name}/package.json`), 'utf8'));
     assert.equal(actual.version, version, `${name} runtime version`);
+  }
+});
+
+test('published manifest passes the rc.3 compatibility gate without an exemption', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  assert.equal(getDshRuntimeVersion(), '0.2.1-rc.3');
+  assert.equal(manifest.engines.dsh, '0.2.1-rc.3');
+  assert.equal(evaluatePluginCompatibility(manifest), undefined);
+  const { dsh, ...otherEngines } = manifest.engines;
+  assert.equal(evaluatePluginCompatibility({ ...manifest, engines: otherEngines }), undefined,
+    'Host peers must also satisfy rc.3; engines.dsh must not hide old dependencies');
+  assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-client-ui-primitives'], undefined,
+    'UI primitives are supplied by shell seeds, not the host package resolver');
+  assert.equal(manifest.devDependencies['@deepseek-ai/dsh-client-ui-primitives'], '0.2.1-rc.3');
+  for (const runtimeVersion of ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1', '0.3.0']) {
+    const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion);
+    assert.deepEqual(issue.requirements, { 'engines.dsh': '0.2.1-rc.3' });
+    assert.equal(issue.exempted, false, 'Untested runtimes must not be silently accepted');
   }
 });
 
@@ -246,6 +264,22 @@ test('invalid volatile candidate keeps the running values and provider usable', 
   assert.equal(calls.length, 1);
 });
 
+test('rc.3 WebRuntime caps structured sources and forwards caller cancellation', async t => {
+  const response = completedResponse();
+  response.output[0].action.sources.push({ url: 'https://example.invalid/second', title: 'Second source' });
+  const calls = stubFetch(t, [response]);
+  const runtime = await createRuntime(t);
+  await loadProvider(runtime);
+  const result = await runtime.web.search({ query: 'limited sources', maxResults: 1 });
+  assert.equal(result.sources.length, 1);
+  assert.equal(result.truncated, true);
+  assert.equal(result.content, 'Runtime search answer');
+  const abort = new AbortController();
+  abort.abort();
+  await assert.rejects(runtime.web.search({ query: 'cancelled' }, abort.signal), { code: 'WEB_ABORTED' });
+  assert.equal(calls.length, 1, 'Cancelled requests must not dispatch HTTP');
+});
+
 test('bundle patch composes with real DSH semantics and explicitly selects codex-local', async t => {
   const calls = stubFetch(t);
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
@@ -270,7 +304,7 @@ test('bundle patch composes with real DSH semantics and explicitly selects codex
   // The isolated Loader has no host package-install projection; resolve the
   // bundle's self package to its public entry, preserving id and composed config.
   await loadProvider(runtime, { ...inserted.config, ...initialConfig }, inserted.id);
-  assert.equal(runtime.web.searchProviderId, 'codex-local');
+  assert.equal(runtime.web.config.searchProvider.get(), 'codex-local');
   assert.equal(runtime.web.searchProviders.size, 2);
   const result = await runtime.web.search({ query: 'bundle selection' });
   assert.equal(runtime.web.searchProviders.get('codex-local').id, 'codex-local');

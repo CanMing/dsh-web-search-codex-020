@@ -3,7 +3,8 @@ import vm from 'node:vm';
 
 const root = new URL('../', import.meta.url);
 const manifest = JSON.parse(fs.readFileSync(new URL('package.json', root), 'utf8'));
-let source = fs.readFileSync(new URL('client.js', root), 'utf8');
+// Git checkouts on Windows may use CRLF; parsing and emitted builds use LF.
+let source = fs.readFileSync(new URL('client.js', root), 'utf8').replace(/\r\n?/g, '\n');
 const exported = [];
 // This source intentionally uses only static external imports and named declarations.
 // Fail closed if that documented source format changes; no general-purpose bundler needed.

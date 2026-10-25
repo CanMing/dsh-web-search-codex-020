@@ -1,3 +1,17 @@
+# Release 0.2.1-rc.3
+
+Adaptation for DeepSeek Harness desktop **0.2.1-rc.3**.
+
+- Declare the tested runtime in `engines.dsh` and align DSH host peer dependencies, passing the new compatibility gate without an exemption.
+- Keep the existing package name, `web-search-codex` configuration namespace, `codex-local` provider and credential reference so existing settings can be reused.
+- Follow the rc.3 browser shell contract: develop against UI primitives at rc.3 while using the shell's provided runtime instance, without installing primitives as a host peer.
+- Normalize Windows CRLF source before building the classic client; add an LF/CRLF build regression.
+- Validate the generated client with the actual rc.3 SettingsFormModel implementation: typed saves, revision conflicts, simultaneous reference/key changes, rejected writes, retries and blank secrets.
+- Update Loader/WebRuntime integration coverage for rc.3, including source limits, caller cancellation and volatile provider selection.
+- Refresh transport user-agent, documentation and validation evidence. The automated suite now contains **43 passing tests**.
+
+See VALIDATION.md for scope and limits. Installation assets are distributed through GitHub Releases.
+
 # Release 0.2.0-rc.2
 
 Initial independent adaptation for DeepSeek Harness desktop 0.2.0-rc.2.
