@@ -1,3 +1,11 @@
+# Release 0.2.1-rc.5
+
+Adaptation for DeepSeek Harness desktop **0.2.1-rc.5**.
+
+- Align the plugin manifest, DSH host peers, UI-primitives development package, runtime checks and bundle metadata with rc.5.
+- Revalidate provider registration, dynamic settings, compatibility admission, settings form saves and Responses transport against the rc.5 packages.
+- Preserve the existing configuration namespace, provider ID and credential reference for in-place upgrades.
+
 # Release 0.2.1-rc.3
 
 Adaptation for DeepSeek Harness desktop **0.2.1-rc.3**.

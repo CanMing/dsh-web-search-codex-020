@@ -116,11 +116,11 @@ async function loadProvider(runtime, config = initialConfig, id = 'web-search-co
   return entry;
 }
 
-test('uses the actual DSH 0.2.1-rc.3 runtime package versions', async () => {
+test('uses the actual DSH 0.2.1-rc.5 runtime package versions', async () => {
   const expected = {
     '@deepseek-ai/cordis': '4.0.5',
     '@deepseek-ai/schemastery': '3.18.5',
-    '@deepseek-ai/dsh-web': '0.2.1-rc.3',
+    '@deepseek-ai/dsh-web': '0.2.1-rc.5',
     '@deepseek-ai/cordis-plugin-loader': '1.0.6',
   };
   for (const [name, version] of Object.entries(expected)) {
@@ -129,20 +129,21 @@ test('uses the actual DSH 0.2.1-rc.3 runtime package versions', async () => {
   }
 });
 
-test('published manifest passes the rc.3 compatibility gate without an exemption', async () => {
+test('published manifest passes the rc.5 compatibility gate without an exemption', async () => {
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-  assert.equal(getDshRuntimeVersion(), '0.2.1-rc.3');
-  assert.equal(manifest.engines.dsh, '0.2.1-rc.3');
+  assert.equal(getDshRuntimeVersion(), '0.2.1-rc.5');
+  assert.equal(manifest.version, '0.2.1-rc.5');
+  assert.equal(manifest.engines.dsh, '0.2.1-rc.5');
   assert.equal(evaluatePluginCompatibility(manifest), undefined);
   const { dsh, ...otherEngines } = manifest.engines;
   assert.equal(evaluatePluginCompatibility({ ...manifest, engines: otherEngines }), undefined,
-    'Host peers must also satisfy rc.3; engines.dsh must not hide old dependencies');
+    'Host peers must also satisfy rc.5; engines.dsh must not hide old dependencies');
   assert.equal(manifest.peerDependencies['@deepseek-ai/dsh-client-ui-primitives'], undefined,
     'UI primitives are supplied by shell seeds, not the host package resolver');
-  assert.equal(manifest.devDependencies['@deepseek-ai/dsh-client-ui-primitives'], '0.2.1-rc.3');
-  for (const runtimeVersion of ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1', '0.3.0']) {
+  assert.equal(manifest.devDependencies['@deepseek-ai/dsh-client-ui-primitives'], '0.2.1-rc.5');
+  for (const runtimeVersion of ['0.2.0-rc.2', '0.2.1-rc.2', '0.2.1-rc.3', '0.2.1-rc.4', '0.2.1', '0.3.0']) {
     const issue = evaluatePluginCompatibility(manifest, {}, runtimeVersion);
-    assert.deepEqual(issue.requirements, { 'engines.dsh': '0.2.1-rc.3' });
+    assert.deepEqual(issue.requirements, { 'engines.dsh': '0.2.1-rc.5' });
     assert.equal(issue.exempted, false, 'Untested runtimes must not be silently accepted');
   }
 });
@@ -264,7 +265,7 @@ test('invalid volatile candidate keeps the running values and provider usable', 
   assert.equal(calls.length, 1);
 });
 
-test('rc.3 WebRuntime caps structured sources and forwards caller cancellation', async t => {
+test('rc.5 WebRuntime caps structured sources and forwards caller cancellation', async t => {
   const response = completedResponse();
   response.output[0].action.sources.push({ url: 'https://example.invalid/second', title: 'Second source' });
   const calls = stubFetch(t, [response]);
